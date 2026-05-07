@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movie Metadata RAG Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0f14;
+      --surface: #151a22;
+      --surface2: #1c2230;
+      --border: #2a3344;
+      --text: #e8edf4;
+      --muted: #8b98ad;
+      --accent: #5b8cff;
+      --accent2: #7c5cff;
+      --danger: #ff6b6b;
+      --radius: 14px;
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(91, 140, 255, 0.18), transparent),
+                  radial-gradient(900px 500px at 90% 0%, rgba(124, 92, 255, 0.15), transparent),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    header h1 {
+      font-size: clamp(1.55rem, 4vw, 2.15rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.5rem;
+      background: linear-gradient(120deg, #fff 0%, #b8c9ec 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+    .card {
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem 1.4rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+    label.sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      border: 0;
+    }
+    .search-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: stretch;
+    }
+    .search-row input[type="text"] {
+      flex: 1 1 220px;
+      min-width: 0;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search-row input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.25);
+    }
+    .search-row button {
+      padding: 0.85rem 1.35rem;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.98rem;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      transition: transform 0.12s, filter 0.12s;
+    }
+    .search-row button:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+    .search-row button:active {
+      transform: translateY(0);
+    }
+    .examples h2 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin: 0 0 0.65rem;
+      font-weight: 600;
+    }
+    .example-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+    .example-chips button {
+      padding: 0.45rem 0.75rem;
+      font-size: 0.85rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .example-chips button:hover {
+      background: rgba(91, 140, 255, 0.12);
+      border-color: var(--accent);
+    }
+    .alert {
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .alert-error {
+      background: rgba(255, 107, 107, 0.12);
+      border: 1px solid rgba(255, 107, 107, 0.35);
+      color: #ffb4b4;
+    }
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin: 0 0 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      min-width: 720px;
+    }
+    th, td {
+      padding: 0.65rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th {
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.72rem;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(91, 140, 255, 0.04); }
+    td.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .overview-cell {
+      max-width: 280px;
+      color: var(--muted);
+    }
+    .answer-card {
+      border-left: 4px solid var(--accent);
+    }
+    .answer-body {
+      white-space: pre-wrap;
+      color: #dbe4f4;
+      font-size: 0.98rem;
+    }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 2rem;
+    }
+    @media (max-width: 640px) {
+      .wrap { padding: 1rem 1rem 2rem; }
+      th, td { font-size: 0.78rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Movie Metadata RAG Assistant</h1>
+      <p>TF-IDF retrieval over TMDB-style metadata · grounded answers via Ollama</p>
+    </header>
+
+    <div class="card">
+      <form method="post" action="/" id="search-form">
+        <label class="sr-only" for="question">Search or ask a question</label>
+        <div class="search-row">
+          <input type="text" name="question" id="question" placeholder="Ask about genres, themes, eras, or titles…" value="{{ question|e }}" autocomplete="off" />
+          <button type="submit">Search &amp; Ask</button>
+        </div>
+      </form>
+      {% if input_error %}
+      <div class="alert alert-error" style="margin-top:1rem;margin-bottom:0">{{ input_error }}</div>
+      {% endif %}
+    </div>
+
+    <div class="card examples">
+      <h2>Example questions</h2>
+      <div class="example-chips">
+        <button type="button" data-q="Animated family comedy about toys">Animated family comedy about toys</button>
+        <button type="button" data-q="Romance and drama in New York City">Romance and drama in New York City</button>
+        <button type="button" data-q="Space science fiction adventure">Space science fiction adventure</button>
+        <button type="button" data-q="Psychological thriller mystery">Psychological thriller mystery</button>
+        <button type="button" data-q="Movies similar to a magical board game adventure">Magical board game adventure</button>
+      </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">
+      <strong>Ollama error.</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    {% if retrieved %}
+    <div class="card">
+      <h2 class="section-title"><span class="dot"></span> Retrieved movies (top {{ top_k }})</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Title</th>
+              <th>Genres</th>
+              <th>Release Date</th>
+              <th>Vote Avg</th>
+              <th>Vote Count</th>
+              <th>Similarity Score</th>
+              <th>Overview</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in retrieved %}
+            <tr>
+              <td class="num">{{ row.rank }}</td>
+              <td>{{ row.title|e }}</td>
+              <td>{{ row.genres|e }}</td>
+              <td class="num">{{ row.release_date|e }}</td>
+              <td class="num">{{ row.vote_average }}</td>
+              <td class="num">{{ row.vote_count }}</td>
+              <td class="num">{{ "%.4f"|format(row.similarity) }}</td>
+              <td class="overview-cell">{{ row.overview|e }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if answer %}
+    <div class="card answer-card">
+      <h2 class="section-title"><span class="dot"></span> AI answer (grounded on retrieval)</h2>
+      <div class="answer-body">{{ answer|e }}</div>
+    </div>
+    {% endif %}
+
+    <footer>
+      Flask · scikit-learn TF-IDF + cosine similarity · Ollama <code style="color:#8b98ad">minimax-m2.1:cloud</code>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll(".example-chips button").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var q = btn.getAttribute("data-q");
+        var input = document.getElementById("question");
+        if (input && q) {
+          input.value = q;
+          input.focus();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

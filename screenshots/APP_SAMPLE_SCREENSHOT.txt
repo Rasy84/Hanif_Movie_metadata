@@ -1,0 +1,14 @@
+Placeholder instruction for course submission
+===============================================
+
+After you run the app and complete a sample search:
+
+1. Open http://127.0.0.1:5005 in your browser.
+2. Enter a sample question and submit so the retrieved table and AI answer are visible.
+3. Capture a screenshot and save it in this folder as:
+
+   app_sample.png
+
+4. Reference this file in your README as required by your instructor.
+
+You may delete this .txt file after adding app_sample.png.
