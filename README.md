@@ -13,7 +13,7 @@ The app reads `movies_metadata.csv` (TMDB / “The Movies Dataset” style metad
 **Question → Retrieve → Build Context → LLM Answer**
 
 1. The user enters a question (or keywords) in the browser.
-2. **Retrieve:** The question is encoded with the same TF-IDF vectorizer used for the corpus. **Cosine similarity** scores every movie; the **top 5** rows are kept, with scores shown in the UI.
+2. **Retrieve:** The question is encoded with the same TF-IDF vectorizer used for the corpus. **Cosine similarity** scores every movie; the **top N** rows are kept (N depends on your question, for example singular “best … movie” uses one hit), with scores shown in the UI.
 3. **Build context:** Those rows are formatted into a short, human-readable block (titles, dates, genres, votes, popularity, trimmed overviews).
 4. **LLM answer:** That block is sent in the prompt to Ollama (`/api/generate`) with instructions to answer **only** from the context and to admit when the context is insufficient.
 
@@ -76,8 +76,10 @@ http://127.0.0.1:5005
 
 ## Screenshot instruction
 
-After a successful search, capture the page showing the **retrieved movies table** and **AI answer card**. Save the image under `screenshots/` as **`app_sample.png`**. See `screenshots/APP_SAMPLE_SCREENSHOT.txt` for a short checklist.
+The repo includes **`screenshots/01_home.png`**, **`screenshots/02_search_best_comedy.png`**, and **`screenshots/app_sample.png`** (same as the search example). They were generated with **`scripts/capture_screenshots.py`** while the app was running on port 5005 (`pip install playwright` and `python -m playwright install chromium` if you need to re-run it).
+
+To capture your own manually: save under `screenshots/` as **`app_sample.png`**. See **`screenshots/APP_SAMPLE_SCREENSHOT.txt`** for a short checklist.
 
 ## GitHub submission note
 
-If you submit this project on GitHub, avoid committing secrets (`.env` is gitignored). The dataset file is large; confirm your course policy on whether `movies_metadata.csv` should be included in the repo or downloaded separately, and use Git LFS or an external link if required.
+Public repository: **https://github.com/Rasy84/Hanif_Movie_metadata** — avoid committing secrets (`.env` is gitignored). The bundled `movies_metadata.csv` is ~34 MB; confirm your course policy if you prefer Git LFS or an external download link instead.
