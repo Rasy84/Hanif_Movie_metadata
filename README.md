@@ -80,6 +80,17 @@ The repo includes **`screenshots/01_home.png`**, **`screenshots/02_search_best_c
 
 To capture your own manually: save under `screenshots/` as **`app_sample.png`**. See **`screenshots/APP_SAMPLE_SCREENSHOT.txt`** for a short checklist.
 
+## Cover letter PDF (with screenshots)
+
+The repo includes **`COVER_LETTER.pdf`**, generated from **`COVER_LETTER.md`** with the PNGs under **`screenshots/`** embedded. To rebuild it after you edit the letter or replace images:
+
+```text
+pip install -r requirements.txt
+python scripts/generate_cover_pdf.py
+```
+
+That writes **`COVER_LETTER.pdf`** in the project root.
+
 ## GitHub submission note
 
 Public repository: **https://github.com/Rasy84/Hanif_Movie_metadata** — avoid committing secrets (`.env` is gitignored). The bundled `movies_metadata.csv` is ~34 MB; confirm your course policy if you prefer Git LFS or an external download link instead.
